@@ -33,8 +33,8 @@ def split_data(df: pd.DataFrame):
     return train, test
 
 
-def predict_arima(train: pd.DataFrame, test: pd.DataFrame):
-    model = ARIMA(train['Occupancy'], order=(1, 0, 1)).fit()
+def predict_arima(train: pd.DataFrame, test: pd.DataFrame, order=(0,0,1)): # New best order from d=0 experiments
+    model = ARIMA(train['Occupancy'], order=order).fit()
     forecast = model.forecast(steps=len(test))
     mae = mean_absolute_error(test['Occupancy'], forecast)
     return forecast, mae
@@ -49,12 +49,12 @@ def predict_regression(train: pd.DataFrame, test: pd.DataFrame):
     return forecast, mae
 
 
-def predict_nn(train: pd.DataFrame, test: pd.DataFrame):
+def predict_nn(train: pd.DataFrame, test: pd.DataFrame, hidden_layer_sizes=(100, 50), max_iter=1000): # Updated best NN params
     X_train, y_train = train[FEATURES], train['Occupancy']
     X_test, y_test = test[FEATURES], test['Occupancy']
     model = Pipeline([
         ('scaler', StandardScaler()),
-        ('mlp', MLPRegressor(hidden_layer_sizes=(50,), max_iter=500, random_state=42))
+        ('mlp', MLPRegressor(hidden_layer_sizes=hidden_layer_sizes, max_iter=max_iter, random_state=42))
     ])
     model.fit(X_train, y_train)
     forecast = model.predict(X_test)
